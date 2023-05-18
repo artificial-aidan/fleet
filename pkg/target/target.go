@@ -123,6 +123,7 @@ func (m *Manager) getBundlesInScopeForCluster(cluster *fleet.Cluster) ([]*fleet.
 		if !matcher.MatchesNamespace(cluster.Namespace) {
 			continue
 		}
+		logrus.Debugf("getBundlesInScopeForCluster: adding BundleNamespaceMapping %s/%s for cluster %s", mapping.Namespace, mapping.Name, cluster.Name)
 		if err := bundleSet.insert(matcher.Bundles()); err != nil {
 			return nil, err
 		}
@@ -153,6 +154,7 @@ func (m *Manager) BundlesForCluster(cluster *fleet.Cluster) (bundlesToRefresh, b
 		if match != nil {
 			bundlesToRefresh = append(bundlesToRefresh, app)
 		} else {
+			logrus.Debugf("adding bundle %s/%s to cleanup list for cluster %s", app.Namespace, app.Name, cluster.Name)
 			bundlesToCleanup = append(bundlesToCleanup, app)
 		}
 	}
@@ -167,6 +169,7 @@ func (m *Manager) GetBundleDeploymentsForBundleInCluster(app *fleet.Bundle, clus
 	}
 	nsPrefix := name.SafeConcatName("cluster", cluster.Namespace, cluster.Name)
 	for _, bd := range bundleDeployments {
+		logrus.Debugf("checking bundleDeployment namespace: %s against prefix: %s", bd.Namespace, nsPrefix)
 		if strings.HasPrefix(bd.Namespace, nsPrefix) {
 			result = append(result, bd)
 		}

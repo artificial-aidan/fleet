@@ -3,9 +3,11 @@ package target
 import (
 	"testing"
 
+	controller "github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/pkg/yaml"
+	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
+	"github.com/rancher/fleet/pkg/generated/controllers/fleet.cattle.io/v1alpha1"
 )
 
 const bundleYaml = `namespace: default
@@ -103,4 +105,29 @@ func TestProcessLabelValues(t *testing.T) {
 	if thirdElemVal.(string) != "local" {
 		t.Fatal("label replacement not performed in third element")
 	}
+}
+
+func TestClusterPrefixIssue(t *testing.T) {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	// if you want to change the loading rules (which files in which order), you can do so here
+
+	configOverrides := &clientcmd.ConfigOverrides{}
+	// if you want to change override values or bind them to flags, there are methods to help you
+
+	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+
+	scf := controller.NewSharedControllerFactoryFromConfig(config)
+
+	iface := v1alpha1.New(scf)
+
+	mgr := New(
+		iface.Cluster().Cache(),
+		iface.ClusterGroup().Cache(),
+		iface.Bundle().Cache(),
+		iface.BundleNamespaceMapping().Cache(),
+		nil,
+		nil,
+		iface.BundleDeployment().Cache(),
+	)
+
 }

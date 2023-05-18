@@ -99,6 +99,7 @@ func (h *handler) OnClusterChange(_ string, cluster *fleet.Cluster) (*fleet.Clus
 		return nil, err
 	}
 	for _, bundle := range bundlesToCleanup {
+		logrus.Debugf("checking for bundleDeployments for bundle %v in cluster %v", bundle.Name, cluster.Name)
 		bundleDeployments, err := h.targets.GetBundleDeploymentsForBundleInCluster(bundle, cluster)
 		if err != nil {
 			return nil, err
